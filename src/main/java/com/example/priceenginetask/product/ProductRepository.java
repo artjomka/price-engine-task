@@ -1,4 +1,4 @@
-package com.example.priceenginetask;
+package com.example.priceenginetask.product;
 
 import org.springframework.stereotype.Component;
 

@@ -1,5 +1,8 @@
-package com.example.priceenginetask;
+package com.example.priceenginetask.pricing;
 
+import com.example.priceenginetask.product.Product;
+import com.example.priceenginetask.product.ProductConfiguration;
+import com.example.priceenginetask.product.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -10,30 +13,22 @@ import static java.math.BigDecimal.*;
 @Service
 public class ProductPriceCalculator implements PriceCalculator {
 
-    private final ProductRepository productRepository;
-
-    public ProductPriceCalculator(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
-
     @Override
-    public BigDecimal calculatePrice(String productId, Integer units) {
-        var product = productRepository.getById(productId)
-                .orElseThrow(() -> new RuntimeException("No product found by id " + productId));
-        var totalAmountOfBoxes = units / product.productUnit().unitsPerBox();
-        var manuallyPickedItems = units % product.productUnit().unitsPerBox();
-        var priceForBoxes = calculateProductBoxesPrice(totalAmountOfBoxes, product.productUnit().pricePerBox());
-        var priceForUnits = calculatePriceForUnits(manuallyPickedItems, product.productUnit());
+    public BigDecimal calculatePrice(Product product, Integer units) {
+        var totalAmountOfBoxes = units / product.productConfiguration().unitsPerBox();
+        var manuallyPickedItems = units % product.productConfiguration().unitsPerBox();
+        var priceForBoxes = calculateProductBoxesPrice(totalAmountOfBoxes, product.productConfiguration().pricePerBox());
+        var priceForUnits = calculatePriceForUnits(manuallyPickedItems, product.productConfiguration());
         return priceForBoxes.add(priceForUnits);
     }
 
-    private BigDecimal calculatePriceForUnits(Integer manuallyPickedItems, ProductUnit productUnit) {
+    private BigDecimal calculatePriceForUnits(Integer manuallyPickedItems, ProductConfiguration productConfiguration) {
         if (manuallyPickedItems == 0) {
             return ZERO;
         }
 
-        var totalAmountOfManuallyPickedItems = productUnit.pricePerBox()
-                .divide(valueOf(productUnit.unitsPerBox()), RoundingMode.HALF_UP)
+        var totalAmountOfManuallyPickedItems = productConfiguration.pricePerBox()
+                .divide(valueOf(productConfiguration.unitsPerBox()), RoundingMode.HALF_UP)
                 .multiply(valueOf(manuallyPickedItems));
 
         return totalAmountOfManuallyPickedItems.multiply(BigDecimal.valueOf(0.3)).add(totalAmountOfManuallyPickedItems);
