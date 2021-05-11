@@ -2,16 +2,20 @@ package com.example.priceenginetask.pricing;
 
 import com.example.priceenginetask.product.Product;
 import com.example.priceenginetask.product.ProductConfiguration;
-import com.example.priceenginetask.product.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import static java.math.BigDecimal.*;
+import static java.math.BigDecimal.ZERO;
+import static java.math.BigDecimal.valueOf;
 
 @Service
 public class ProductPriceCalculator implements PriceCalculator {
+
+    public static final double HAND_PICK_ITEM_PRICE_INCREASE = 0.3;
+    public static final int APPLICABLE_FOR_DISCOUNT_AMOUNT = 2;
+    public static final double DISCOUNT = 0.1;
 
     @Override
     public BigDecimal calculatePrice(Product product, Integer units) {
@@ -31,17 +35,17 @@ public class ProductPriceCalculator implements PriceCalculator {
                 .divide(valueOf(productConfiguration.unitsPerBox()), RoundingMode.HALF_UP)
                 .multiply(valueOf(manuallyPickedItems));
 
-        return totalAmountOfManuallyPickedItems.multiply(BigDecimal.valueOf(0.3)).add(totalAmountOfManuallyPickedItems);
+        return totalAmountOfManuallyPickedItems.multiply(BigDecimal.valueOf(HAND_PICK_ITEM_PRICE_INCREASE)).add(totalAmountOfManuallyPickedItems);
     }
 
     private boolean isApplicableForDiscount(int totalAmountOfBoxes) {
-        return totalAmountOfBoxes > 2;
+        return totalAmountOfBoxes > APPLICABLE_FOR_DISCOUNT_AMOUNT;
     }
 
     private BigDecimal calculateProductBoxesPrice(Integer totalAmountOfBoxes, BigDecimal pricePerBox) {
         if (isApplicableForDiscount(totalAmountOfBoxes)) {
             BigDecimal totalPrice = pricePerBox.multiply(valueOf(totalAmountOfBoxes));
-            BigDecimal discount = totalPrice.multiply(valueOf(0.1));
+            BigDecimal discount = totalPrice.multiply(valueOf(DISCOUNT));
             return totalPrice.subtract(discount);
         }
         return pricePerBox.multiply(valueOf(totalAmountOfBoxes));

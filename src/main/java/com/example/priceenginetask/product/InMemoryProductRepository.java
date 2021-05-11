@@ -1,13 +1,17 @@
 package com.example.priceenginetask.product;
 
+import org.springframework.stereotype.Repository;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.math.BigDecimal.*;
+import static java.math.BigDecimal.valueOf;
 
+@Repository
 public class InMemoryProductRepository implements ProductRepository {
-    private Map<String, Product> productMap;
+    private Map<String, Product> productMap = new HashMap<>();
 
     public InMemoryProductRepository() {
         var product1 = new Product("product1", new ProductConfiguration(20, valueOf(175)));
